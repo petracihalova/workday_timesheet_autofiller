@@ -181,7 +181,7 @@ def get_in_and_out_elements(driver):
     return in_elem, out_elem
 
 
-def fill_in_working_hours(driver):
+def load_hours_pattern():
     template = os.environ.get("TEMPLATE")
     pattern = r"^(?P<in1>([1-9]|[01][0-9]|2[0-3]):([0-5][0-9]))-(?P<out1>([1-9]|[01][0-9]|2[0-3]):([0-5][0-9]))($|(\+)(?P<in2>([1-9]|[01][0-9]|2[0-3]):([0-5][0-9]))-(?P<out2>([1-9]|[01][0-9]|2[0-3]):([0-5][0-9]))$)"
     match = re.match(pattern, template)
@@ -192,6 +192,11 @@ def fill_in_working_hours(driver):
     out1 = match.group("out1")
     in2 = match.group("in2")
     out2 = match.group("out2")
+    return in1, out1, in2, out2
+
+
+def fill_in_working_hours(driver, hours_pattern):
+    in1, out1, in2, out2 = hours_pattern
     
     in_elem, out_elem = get_in_and_out_elements(driver)
     in_elem.send_keys(in1)
@@ -250,6 +255,8 @@ def main():
 
     find_first_week(driver)
 
+    hours_pattern = load_hours_pattern()
+
     while True:
         data_range_title_elem = driver.find_element(By.CSS_SELECTOR, '[data-automation-id="dateRangeTitle"]')
         quick_add_button = get_quick_add_button(driver)
@@ -265,7 +272,7 @@ def main():
         days_selected = select_days(driver, pre_filled_hours)
 
         if days_selected:
-            fill_in_working_hours(driver)
+            fill_in_working_hours(driver, hours_pattern)
             click_ok_button(driver)
         else:
             click_back_button(driver)
